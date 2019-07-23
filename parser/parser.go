@@ -2,10 +2,11 @@ package parser
 
 import (
 	"errors"
-	"gopkg.in/yaml.v2"
+	"path"
+
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/credentials/values"
 	. "github.com/ishustava/migrator/credentials"
-	"path"
+	"gopkg.in/yaml.v2"
 )
 
 func AddBoshNamespacing(varsStore map[string]interface{}, directorName, deploymentName string) map[string]interface{} {
@@ -61,7 +62,10 @@ func tryUnmarshalCertificate(value interface{}) (values.Certificate, error) {
 func tryUnmarshalSsh(value interface{}) (values.SSH, error) {
 	ssh := values.SSH{}
 
-	sshMap := value.(map[interface{}]interface{})
+	sshMap, mOk := value.(map[interface{}]interface{})
+	if !mOk {
+		return ssh, nil
+	}
 	_, ok := sshMap["public_key_fingerprint"]
 	if !ok {
 		return ssh, errors.New("Key not found in map: public_key_fingerprint")
@@ -83,4 +87,3 @@ func tryUnmarshalRsa(value interface{}) (values.RSA, error) {
 
 	return rsa, err
 }
-
